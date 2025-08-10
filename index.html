@@ -521,7 +521,7 @@
       position: fixed;
       top: 100px;
       left: 100px;
-      width: 260px;
+      width: 280px;
       background: #181818;
       border: 2px solid #1db954;
       border-radius: 12px;
@@ -562,7 +562,7 @@
       padding: 10px 20px 0 20px;
       display: flex;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
     .eq-control {
       display: flex;
@@ -612,4 +612,565 @@
         <h2>Library</h2>
         <button id="btnAllSongs" class="active">All Songs</button>
         <div class="playlist-list" id="playlists"></div>
-     
+      </nav>
+      <section class="library">
+        <div class="library-header">
+          <button id="toggleThemeBtn" title="Toggle Dark/Light Mode">Dark Mode</button>
+          <input type="search" id="searchInput" placeholder="Search songs, artists, albums..." />
+          <button id="btnNewPlaylist" title="Create New Playlist">New Playlist</button>
+          <div class="features-container">
+            <button id="featuresBtn" title="Features Menu">Features ▼</button>
+            <div id="featuresMenu" role="menu">
+              <button id="openEqBtn" role="menuitem">Equalizer</button>
+            </div>
+          </div>
+        </div>
+        <table id="songsTable" aria-label="Songs list">
+          <thead>
+            <tr>
+              <th class="name">Name</th>
+              <th class="artist">Artist</th>
+              <th class="album">Album</th>
+              <th class="duration">Duration</th>
+            </tr>
+          </thead>
+          <tbody id="songsTbody">
+            <!-- Songs will be dynamically added here -->
+          </tbody>
+        </table>
+      </section>
+      <aside class="queue" aria-label="Up Next Queue">
+        <h3>Up Next</h3>
+        <div class="queue-list" id="queueList"></div>
+      </aside>
+    </div>
+    <footer class="now-playing-bar" aria-live="polite" aria-atomic="true">
+      <div class="now-playing-info" aria-label="Now playing info">
+        <div class="now-playing-title" id="nowPlayingTitle">Nothing Playing</div>
+        <div class="now-playing-artist" id="nowPlayingArtist"></div>
+      </div>
+      <div class="player-controls">
+        <button id="prevBtn" aria-label="Previous Song">⏮️</button>
+        <button id="playPauseBtn" aria-label="Play/Pause">▶️</button>
+        <button id="nextBtn" aria-label="Next Song">⏭️</button>
+      </div>
+      <div class="progress-container" aria-label="Playback progress">
+        <div class="progress-bar" id="progressBar" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%">
+          <div class="progress-filled" id="progressFilled"></div>
+        </div>
+        <div class="time-container">
+          <span id="currentTime">0:00</span>
+          <span id="durationTime">0:00</span>
+        </div>
+      </div>
+      <div class="volume-container" aria-label="Volume control">
+        <span>🔊</span>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.5" />
+      </div>
+    </footer>
+  </div>
+
+  <!-- Audio Element -->
+  <audio id="audioPlayer" crossorigin="anonymous"></audio>
+
+  <!-- EQ Panel -->
+  <div id="eqPanel" role="dialog" aria-modal="true" aria-labelledby="eqHeader">
+    <div id="eqHeader">
+      Equalizer
+      <button id="eqCloseBtn" aria-label="Close Equalizer">×</button>
+    </div>
+    <div class="eq-content">
+      <div class="eq-control">
+        <label for="eqBass">Bass</label>
+        <input type="range" id="eqBass" class="eq-slider" min="-15" max="15" value="0" step="1" />
+      </div>
+      <div class="eq-control">
+        <label for="eqMid">Mid</label>
+        <input type="range" id="eqMid" class="eq-slider" min="-15" max="15" value="0" step="1" />
+      </div>
+      <div class="eq-control">
+        <label for="eqTreble">Treble</label>
+        <input type="range" id="eqTreble" class="eq-slider" min="-15" max="15" value="0" step="1" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Your Google Drive API details
+    const DRIVE_API_KEY = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
+    const DRIVE_FOLDER_ID = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
+
+    // Globals
+    const audio = document.getElementById('audioPlayer');
+    let songs = [];
+    let filteredSongs = [];
+    let currentIndex = -1;
+    let isPlaying = false;
+    let upNextQueue = [];
+    let playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
+    let currentPlaylist = null;
+
+    // Audio Context and EQ nodes
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const sourceNode = audioCtx.createMediaElementSource(audio);
+
+    // Create EQ filters (Bass, Mid, Treble)
+    const bassEQ = audioCtx.createBiquadFilter();
+    bassEQ.type = 'lowshelf';
+    bassEQ.frequency.value = 200;
+
+    const midEQ = audioCtx.createBiquadFilter();
+    midEQ.type = 'peaking';
+    midEQ.frequency.value = 1000;
+    midEQ.Q.value = 1;
+
+    const trebleEQ = audioCtx.createBiquadFilter();
+    trebleEQ.type = 'highshelf';
+    trebleEQ.frequency.value = 3000;
+
+    // Connect EQ chain: source -> bass -> mid -> treble -> destination
+    sourceNode.connect(bassEQ);
+    bassEQ.connect(midEQ);
+    midEQ.connect(trebleEQ);
+    trebleEQ.connect(audioCtx.destination);
+
+    // DOM Elements
+    const songsTbody = document.getElementById('songsTbody');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFilled = document.getElementById('progressFilled');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const searchInput = document.getElementById('searchInput');
+    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    const btnNewPlaylist = document.getElementById('btnNewPlaylist');
+    const playlistsDiv = document.getElementById('playlists');
+    const btnAllSongs = document.getElementById('btnAllSongs');
+    const queueList = document.getElementById('queueList');
+
+    const featuresBtn = document.getElementById('featuresBtn');
+    const featuresMenu = document.getElementById('featuresMenu');
+    const openEqBtn = document.getElementById('openEqBtn');
+    const eqPanel = document.getElementById('eqPanel');
+    const eqCloseBtn = document.getElementById('eqCloseBtn');
+    const eqBass = document.getElementById('eqBass');
+    const eqMid = document.getElementById('eqMid');
+    const eqTreble = document.getElementById('eqTreble');
+
+    // Draggable EQ Panel Setup
+    (function setupDraggableEQ() {
+      let isDragging = false;
+      let dragOffsetX, dragOffsetY;
+
+      eqPanel.querySelector('#eqHeader').addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragOffsetX = e.clientX - eqPanel.offsetLeft;
+        dragOffsetY = e.clientY - eqPanel.offsetTop;
+        eqPanel.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        eqPanel.style.cursor = 'default';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          let x = e.clientX - dragOffsetX;
+          let y = e.clientY - dragOffsetY;
+          // Keep panel in viewport
+          x = Math.min(Math.max(0, x), window.innerWidth - eqPanel.offsetWidth);
+          y = Math.min(Math.max(0, y), window.innerHeight - eqPanel.offsetHeight);
+          eqPanel.style.left = x + 'px';
+          eqPanel.style.top = y + 'px';
+        }
+      });
+    })();
+
+    // Load songs from Google Drive folder
+    async function loadSongsFromDrive() {
+      // We'll call the Drive API files.list endpoint
+      // to get files from the specified folder
+      // Supports mp3, m4a, wav
+
+      const url = `https://www.googleapis.com/drive/v3/files?key=${DRIVE_API_KEY}` +
+        `&q='${DRIVE_FOLDER_ID}'+in+parents+and+mimeType+contains+'audio/'` +
+        `&fields=files(id,name,mimeType,size,createdTime)` +
+        `&orderBy=name`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.files) {
+          // Map files to song objects
+          songs = data.files.map(file => ({
+            id: file.id,
+            name: file.name,
+            artist: 'Unknown Artist',
+            album: 'Unknown Album',
+            duration: 0,
+            url: `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${DRIVE_API_KEY}`
+          }));
+          filteredSongs = songs;
+          renderSongsTable();
+        } else {
+          console.error('No files found in Drive folder or invalid API key.');
+        }
+      } catch (err) {
+        console.error('Failed to load songs from Drive:', err);
+      }
+    }
+
+    // Render songs table rows
+    function renderSongsTable() {
+      songsTbody.innerHTML = '';
+      filteredSongs.forEach((song, i) => {
+        const tr = document.createElement('tr');
+        tr.tabIndex = 0;
+        tr.dataset.index = i;
+
+        tr.innerHTML = `
+          <td class="name">${song.name}</td>
+          <td class="artist">${song.artist}</td>
+          <td class="album">${song.album}</td>
+          <td class="duration">${song.duration > 0 ? formatDuration(song.duration) : '--:--'}</td>
+        `;
+
+        // Click selects and plays song
+        tr.addEventListener('click', () => {
+          playSongAtIndex(i);
+        });
+        // Keyboard enter to play song
+        tr.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            playSongAtIndex(i);
+          }
+        });
+
+        songsTbody.appendChild(tr);
+      });
+      updateSelectedSongHighlight();
+    }
+
+    // Format seconds to MM:SS
+    function formatDuration(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    // Play song at given index
+    async function playSongAtIndex(index) {
+      if (index < 0 || index >= filteredSongs.length) return;
+      currentIndex = index;
+      const song = filteredSongs[index];
+
+      // Unlock Audio Context on user interaction (required by some browsers)
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      audio.src = song.url;
+      audio.play().then(() => {
+        isPlaying = true;
+        updatePlayPauseBtn();
+        nowPlayingTitle.textContent = song.name;
+        nowPlayingArtist.textContent = song.artist;
+        updateSelectedSongHighlight();
+        addSongToQueue(song);
+      }).catch(err => {
+        console.error('Playback error:', err);
+      });
+    }
+
+    // Update selected song highlight in the table
+    function updateSelectedSongHighlight() {
+      Array.from(songsTbody.children).forEach(tr => {
+        tr.classList.remove('selected');
+      });
+      if (currentIndex >= 0 && currentIndex < songsTbody.children.length) {
+        songsTbody.children[currentIndex].classList.add('selected');
+      }
+    }
+
+    // Play/pause toggle
+    function togglePlayPause() {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+      } else {
+        audio.play();
+        isPlaying = true;
+      }
+      updatePlayPauseBtn();
+    }
+
+    // Update play/pause button icon
+    function updatePlayPauseBtn() {
+      playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+      playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    }
+
+    // Play next song
+    function playNext() {
+      if (currentIndex + 1 < filteredSongs.length) {
+        playSongAtIndex(currentIndex + 1);
+      } else {
+        // Loop back to start
+        playSongAtIndex(0);
+      }
+    }
+
+    // Play previous song
+    function playPrev() {
+      if (currentIndex - 1 >= 0) {
+        playSongAtIndex(currentIndex - 1);
+      } else {
+        playSongAtIndex(filteredSongs.length - 1);
+      }
+    }
+
+    // Update progress bar and times
+    function updateProgress() {
+      if (!audio.duration) return;
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progressFilled.style.width = percent + '%';
+      currentTimeEl.textContent = formatDuration(audio.currentTime);
+      durationTimeEl.textContent = formatDuration(audio.duration);
+      progressBar.setAttribute('aria-valuenow', Math.floor(percent));
+      progressBar.setAttribute('aria-valuetext', formatDuration(audio.currentTime));
+    }
+
+    // Seek audio to position based on click on progress bar
+    function seekAudio(event) {
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const seekPercent = clickX / rect.width;
+      if (audio.duration) {
+        audio.currentTime = seekPercent * audio.duration;
+      }
+    }
+
+    // Adjust volume
+    function setVolume(value) {
+      audio.volume = value;
+    }
+
+    // Search songs
+    function filterSongs() {
+      const query = searchInput.value.toLowerCase();
+      filteredSongs = songs.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        s.artist.toLowerCase().includes(query) ||
+        s.album.toLowerCase().includes(query)
+      );
+      renderSongsTable();
+    }
+
+    // Toggle dark/light mode
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) {
+        toggleThemeBtn.textContent = 'Light Mode';
+      } else {
+        toggleThemeBtn.textContent = 'Dark Mode';
+      }
+    }
+
+    // Add song to Up Next queue
+    function addSongToQueue(song) {
+      if (!upNextQueue.find(s => s.id === song.id)) {
+        upNextQueue.push(song);
+        renderQueue();
+      }
+    }
+
+    // Render Up Next queue list
+    function renderQueue() {
+      queueList.innerHTML = '';
+      upNextQueue.forEach((song, i) => {
+        const div = document.createElement('div');
+        div.className = 'queue-item';
+        if (currentIndex >= 0 && filteredSongs[currentIndex].id === song.id) {
+          div.classList.add('selected');
+        }
+        div.tabIndex = 0;
+        div.innerHTML = `
+          <span>${song.name}</span>
+          <button title="Remove from Queue" aria-label="Remove ${song.name} from queue">&times;</button>
+        `;
+        div.querySelector('button').addEventListener('click', e => {
+          e.stopPropagation();
+          upNextQueue.splice(i, 1);
+          renderQueue();
+        });
+        div.addEventListener('click', () => {
+          // Play this queued song if it's in filteredSongs
+          const idx = filteredSongs.findIndex(s => s.id === song.id);
+          if (idx !== -1) {
+            playSongAtIndex(idx);
+          }
+        });
+        div.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const idx = filteredSongs.findIndex(s => s.id === song.id);
+            if (idx !== -1) {
+              playSongAtIndex(idx);
+            }
+          }
+        });
+        queueList.appendChild(div);
+      });
+    }
+
+    // Features Menu toggle
+    featuresBtn.addEventListener('click', () => {
+      featuresMenu.classList.toggle('show');
+    });
+    // Close features menu if clicking outside
+    document.addEventListener('click', (e) => {
+      if (!featuresBtn.contains(e.target) && !featuresMenu.contains(e.target)) {
+        featuresMenu.classList.remove('show');
+      }
+    });
+
+    // Open EQ Panel
+    openEqBtn.addEventListener('click', () => {
+      featuresMenu.classList.remove('show');
+      eqPanel.style.display = 'block';
+    });
+    // Close EQ Panel
+    eqCloseBtn.addEventListener('click', () => {
+      eqPanel.style.display = 'none';
+    });
+
+    // EQ Slider controls update EQ filters
+    eqBass.addEventListener('input', () => {
+      bassEQ.gain.value = eqBass.value;
+    });
+    eqMid.addEventListener('input', () => {
+      midEQ.gain.value = eqMid.value;
+    });
+    eqTreble.addEventListener('input', () => {
+      trebleEQ.gain.value = eqTreble.value;
+    });
+
+    // Setup volume control
+    volumeSlider.addEventListener('input', () => {
+      setVolume(volumeSlider.value);
+    });
+    setVolume(volumeSlider.value);
+
+    // Setup play/pause button
+    playPauseBtn.addEventListener('click', () => {
+      togglePlayPause();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      playPrev();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      playNext();
+    });
+
+    // Progress bar interactions
+    progressBar.addEventListener('click', seekAudio);
+    progressBar.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        audio.currentTime = Math.max(0, audio.currentTime - 5);
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+      }
+    });
+
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => {
+      playNext();
+    });
+
+    // Search input
+    searchInput.addEventListener('input', filterSongs);
+
+    // Theme toggle
+    toggleThemeBtn.addEventListener('click', toggleTheme);
+
+    // New Playlist creation (basic)
+    btnNewPlaylist.addEventListener('click', () => {
+      const name = prompt('Enter new playlist name:');
+      if (!name) return;
+      if (playlists[name]) {
+        alert('Playlist already exists!');
+        return;
+      }
+      playlists[name] = [];
+      savePlaylists();
+      renderPlaylists();
+    });
+
+    // Save playlists to localStorage
+    function savePlaylists() {
+      localStorage.setItem('playlists', JSON.stringify(playlists));
+    }
+
+    // Render playlists list
+    function renderPlaylists() {
+      playlistsDiv.innerHTML = '';
+      for (const name in playlists) {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.title = `Playlist: ${name}`;
+        btn.addEventListener('click', () => {
+          loadPlaylist(name);
+        });
+        playlistsDiv.appendChild(btn);
+      }
+    }
+
+    // Load a playlist to filteredSongs view
+    function loadPlaylist(name) {
+      currentPlaylist = name;
+      const songIds = playlists[name];
+      filteredSongs = songs.filter(s => songIds.includes(s.id));
+      renderSongsTable();
+      btnAllSongs.classList.remove('active');
+      Array.from(playlistsDiv.children).forEach(b => b.classList.remove('active'));
+      const playlistBtn = Array.from(playlistsDiv.children).find(b => b.textContent === name);
+      if (playlistBtn) playlistBtn.classList.add('active');
+      searchInput.value = '';
+    }
+
+    // Load All Songs
+    btnAllSongs.addEventListener('click', () => {
+      filteredSongs = songs;
+      renderSongsTable();
+      currentPlaylist = null;
+      btnAllSongs.classList.add('active');
+      Array.from(playlistsDiv.children).forEach(b => b.classList.remove('active'));
+      searchInput.value = '';
+    });
+
+    // Initialization
+    async function init() {
+      renderPlaylists();
+      await loadSongsFromDrive();
+      filteredSongs = songs;
+      renderSongsTable();
+      btnAllSongs.classList.add('active');
+      // Dark mode default is ON, so button says Dark Mode
+      toggleThemeBtn.textContent = 'Dark Mode';
+    }
+
+    init();
+  </script>
+</body>
+</html>
