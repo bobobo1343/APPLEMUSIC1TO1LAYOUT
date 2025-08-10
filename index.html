@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>iTunes Desktop Replica with Draggable EQ</title>
+  <title>iTunes Desktop Replica - No Artwork + EQ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     /* Reset */
@@ -142,20 +142,6 @@
     #toggleThemeBtn:hover {
       background: #17a44c;
     }
-    #btnNewPlaylist {
-      background: #1db954;
-      color: #000;
-      font-weight: 700;
-      padding: 8px 15px;
-      border-radius: 18px;
-      font-size: 14px;
-      transition: background 0.3s;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-    #btnNewPlaylist:hover {
-      background: #17a44c;
-    }
     .library-header input[type="search"] {
       padding: 7px 15px;
       border-radius: 14px;
@@ -172,56 +158,19 @@
       background: #eee;
       color: #111;
     }
-    /* Features Dropdown */
-    .features-container {
-      position: relative;
-      user-select: none;
-      flex-shrink: 0;
-    }
-    #featuresBtn {
+    #btnNewPlaylist {
       background: #1db954;
       color: #000;
       font-weight: 700;
-      padding: 8px 14px;
+      padding: 8px 15px;
       border-radius: 18px;
-      border: none;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.3s;
-    }
-    #featuresBtn:hover {
-      background: #17a44c;
-    }
-    #featuresMenu {
-      position: absolute;
-      right: 0;
-      top: 40px;
-      background: #181818;
-      border: 1px solid #1db954;
-      border-radius: 8px;
-      display: none;
-      min-width: 160px;
-      z-index: 10000;
-      box-shadow: 0 0 15px rgba(29, 185, 84, 0.4);
-    }
-    #featuresMenu.show {
-      display: block;
-    }
-    #featuresMenu button {
-      width: 100%;
-      padding: 10px 15px;
-      text-align: left;
       font-size: 14px;
-      border-radius: 0;
-      border: none;
-      background: none;
-      color: #eee;
-      transition: background 0.2s;
+      transition: background 0.3s;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
-    #featuresMenu button:hover {
-      background: #1db954;
-      color: #000;
-      font-weight: 700;
+    #btnNewPlaylist:hover {
+      background: #17a44c;
     }
     /* Song Table */
     table {
@@ -495,90 +444,34 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background-color: #1db954;
-      border-radius: 4px;
-    }
-    /* Responsive */
-    @media (max-width: 900px) {
-      .queue {
-        display: none;
-      }
-      .library-header {
-        gap: 10px;
-      }
-    }
-    /* Draggable EQ Panel */
-    #eqPanel {
-      position: fixed;
-      top: 100px;
-      left: 100px;
-      width: 280px;
-      background: #181818;
-      border: 2px solid #1db954;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #1db954aa;
-      color: #eee;
-      user-select: none;
-      display: none;
-      z-index: 20000;
-      font-size: 14px;
-      padding-bottom: 12px;
-    }
-    #eqHeader {
-      background: #1db954;
-      color: #000;
-      padding: 10px;
-      border-radius: 10px 10px 0 0;
-      font-weight: 700;
-      cursor: grab;
+    /* Equalizer controls */
+    .equalizer {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #eqHeader:active {
-      cursor: grabbing;
-    }
-    #eqCloseBtn {
-      background: none;
-      border: none;
-      font-weight: 900;
-      font-size: 18px;
-      color: #000;
-      cursor: pointer;
-      user-select: none;
-      padding: 0 6px;
-      line-height: 1;
-    }
-    .eq-content {
-      padding: 10px 20px 0 20px;
-      display: flex;
-      justify-content: space-between;
       gap: 12px;
+      align-items: center;
+      min-width: 220px;
+      flex-shrink: 0;
+      color: #bbb;
+    }
+    body.light .equalizer {
+      color: #444;
     }
     .eq-control {
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-size: 10px;
       user-select: none;
     }
     .eq-control label {
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 600;
-      font-size: 13px;
+      color: inherit;
     }
     .eq-slider {
       -webkit-appearance: none;
-      width: 60px;
-      height: 120px;
+      width: 40px;
+      height: 100px;
       background: #333;
       border-radius: 8px;
       cursor: pointer;
@@ -603,6 +496,30 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #1db954;
+      border-radius: 4px;
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .queue {
+        display: none;
+      }
+      .library-header {
+        gap: 10px;
+      }
+      .equalizer {
+        min-width: 150px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -615,47 +532,44 @@
       </nav>
       <section class="library">
         <div class="library-header">
-          <button id="toggleThemeBtn" title="Toggle Dark/Light Mode">Dark Mode</button>
-          <input type="search" id="searchInput" placeholder="Search songs, artists, albums..." />
-          <button id="btnNewPlaylist" title="Create New Playlist">New Playlist</button>
-          <div class="features-container">
-            <button id="featuresBtn" title="Features Menu">Features ▼</button>
-            <div id="featuresMenu" role="menu">
-              <button id="openEqBtn" role="menuitem">Equalizer</button>
-            </div>
-          </div>
+          <button id="toggleThemeBtn" aria-label="Toggle light/dark mode">Toggle Light/Dark</button>
+          <input type="search" id="searchInput" placeholder="Search" autocomplete="off" aria-label="Search songs"/>
+          <button id="btnNewPlaylist">New Playlist</button>
         </div>
-        <table id="songsTable" aria-label="Songs list">
+        <table id="songsTable" tabindex="0" aria-label="Songs List">
           <thead>
             <tr>
-              <th class="name">Name</th>
-              <th class="artist">Artist</th>
-              <th class="album">Album</th>
-              <th class="duration">Duration</th>
+              <th class="name" title="Song Name">Name</th>
+              <th class="artist" title="Artist">Artist</th>
+              <th class="album" title="Album">Album</th>
+              <th class="duration" title="Duration">Time</th>
             </tr>
           </thead>
-          <tbody id="songsTbody">
-            <!-- Songs will be dynamically added here -->
+          <tbody id="songsBody">
+            <!-- Songs go here -->
           </tbody>
         </table>
       </section>
-      <aside class="queue" aria-label="Up Next Queue">
+      <aside class="queue">
         <h3>Up Next</h3>
-        <div class="queue-list" id="queueList"></div>
+        <div class="queue-list" id="queueList">
+          <!-- Queue songs -->
+        </div>
       </aside>
     </div>
-    <footer class="now-playing-bar" aria-live="polite" aria-atomic="true">
-      <div class="now-playing-info" aria-label="Now playing info">
-        <div class="now-playing-title" id="nowPlayingTitle">Nothing Playing</div>
-        <div class="now-playing-artist" id="nowPlayingArtist"></div>
+    <footer class="now-playing-bar" aria-label="Now playing controls">
+      <div class="now-playing-info" id="nowPlayingInfo">
+        <div class="now-playing-title" id="nowPlayingTitle">No song selected</div>
+        <div class="now-playing-artist" id="nowPlayingArtist">&nbsp;</div>
       </div>
-      <div class="player-controls">
-        <button id="prevBtn" aria-label="Previous Song">⏮️</button>
-        <button id="playPauseBtn" aria-label="Play/Pause">▶️</button>
-        <button id="nextBtn" aria-label="Next Song">⏭️</button>
+      <div class="player-controls" role="group" aria-label="Playback controls">
+        <button id="btnPrev" title="Previous" aria-label="Previous track">⏮️</button>
+        <button id="btnPlayPause" title="Play" aria-label="Play/Pause">▶️</button>
+        <button id="btnNext" title="Next" aria-label="Next track">⏭️</button>
+        <button id="btnShuffle" title="Shuffle" aria-label="Shuffle playlist">🔀</button>
       </div>
-      <div class="progress-container" aria-label="Playback progress">
-        <div class="progress-bar" id="progressBar" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%">
+      <div class="progress-container" id="progressContainer" aria-label="Playback progress" role="slider" tabindex="0">
+        <div class="progress-bar" id="progressBar">
           <div class="progress-filled" id="progressFilled"></div>
         </div>
         <div class="time-container">
@@ -663,514 +577,438 @@
           <span id="durationTime">0:00</span>
         </div>
       </div>
-      <div class="volume-container" aria-label="Volume control">
-        <span>🔊</span>
-        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.5" />
+      <div class="volume-container" title="Volume control">
+        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.7" aria-label="Volume control"/>
+      </div>
+      <div class="equalizer" aria-label="Equalizer controls">
+        <div class="eq-control">
+          <label for="bassSlider">Bass</label>
+          <input type="range" id="bassSlider" class="eq-slider" min="-15" max="15" step="1" value="0" aria-valuemin="-15" aria-valuemax="15" aria-valuenow="0" aria-label="Bass level"/>
+        </div>
+        <div class="eq-control">
+          <label for="midSlider">Mid</label>
+          <input type="range" id="midSlider" class="eq-slider" min="-15" max="15" step="1" value="0" aria-label="Mid level"/>
+        </div>
+        <div class="eq-control">
+          <label for="trebleSlider">Treble</label>
+          <input type="range" id="trebleSlider" class="eq-slider" min="-15" max="15" step="1" value="0" aria-label="Treble level"/>
+        </div>
       </div>
     </footer>
   </div>
 
-  <!-- Audio Element -->
-  <audio id="audioPlayer" crossorigin="anonymous"></audio>
-
-  <!-- EQ Panel -->
-  <div id="eqPanel" role="dialog" aria-modal="true" aria-labelledby="eqHeader">
-    <div id="eqHeader">
-      Equalizer
-      <button id="eqCloseBtn" aria-label="Close Equalizer">×</button>
-    </div>
-    <div class="eq-content">
-      <div class="eq-control">
-        <label for="eqBass">Bass</label>
-        <input type="range" id="eqBass" class="eq-slider" min="-15" max="15" value="0" step="1" />
-      </div>
-      <div class="eq-control">
-        <label for="eqMid">Mid</label>
-        <input type="range" id="eqMid" class="eq-slider" min="-15" max="15" value="0" step="1" />
-      </div>
-      <div class="eq-control">
-        <label for="eqTreble">Treble</label>
-        <input type="range" id="eqTreble" class="eq-slider" min="-15" max="15" value="0" step="1" />
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Your Google Drive API details
-    const DRIVE_API_KEY = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
-    const DRIVE_FOLDER_ID = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
-
     // Globals
-    const audio = document.getElementById('audioPlayer');
-    let songs = [];
-    let filteredSongs = [];
-    let currentIndex = -1;
-    let isPlaying = false;
-    let upNextQueue = [];
-    let playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
-    let currentPlaylist = null;
+    const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn'; // Put your Google Drive folder ID here
+    const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI'; // Put your Google API key here
 
-    // Audio Context and EQ nodes
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-    const sourceNode = audioCtx.createMediaElementSource(audio);
-
-    // Create EQ filters (Bass, Mid, Treble)
-    const bassEQ = audioCtx.createBiquadFilter();
-    bassEQ.type = 'lowshelf';
-    bassEQ.frequency.value = 200;
-
-    const midEQ = audioCtx.createBiquadFilter();
-    midEQ.type = 'peaking';
-    midEQ.frequency.value = 1000;
-    midEQ.Q.value = 1;
-
-    const trebleEQ = audioCtx.createBiquadFilter();
-    trebleEQ.type = 'highshelf';
-    trebleEQ.frequency.value = 3000;
-
-    // Connect EQ chain: source -> bass -> mid -> treble -> destination
-    sourceNode.connect(bassEQ);
-    bassEQ.connect(midEQ);
-    midEQ.connect(trebleEQ);
-    trebleEQ.connect(audioCtx.destination);
-
-    // DOM Elements
-    const songsTbody = document.getElementById('songsTbody');
-    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
-    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    const playlistsDiv = document.getElementById('playlists');
+    const songsBody = document.getElementById('songsBody');
+    const queueList = document.getElementById('queueList');
+    const btnAllSongs = document.getElementById('btnAllSongs');
+    const btnNewPlaylist = document.getElementById('btnNewPlaylist');
+    const searchInput = document.getElementById('searchInput');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnNext = document.getElementById('btnNext');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnShuffle = document.getElementById('btnShuffle');
+    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
     const progressBar = document.getElementById('progressBar');
     const progressFilled = document.getElementById('progressFilled');
-    const currentTimeEl = document.getElementById('currentTime');
-    const durationTimeEl = document.getElementById('durationTime');
-    const volumeSlider = document.getElementById('volumeSlider');
-    const searchInput = document.getElementById('searchInput');
-    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
-    const btnNewPlaylist = document.getElementById('btnNewPlaylist');
-    const playlistsDiv = document.getElementById('playlists');
-    const btnAllSongs = document.getElementById('btnAllSongs');
-    const queueList = document.getElementById('queueList');
+    const currentTimeElem = document.getElementById('currentTime');
+    const durationTimeElem = document.getElementById('durationTime');
+    const progressContainer = document.getElementById('progressContainer');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
+    const bassSlider = document.getElementById('bassSlider');
+    const midSlider = document.getElementById('midSlider');
+    const trebleSlider = document.getElementById('trebleSlider');
 
-    const featuresBtn = document.getElementById('featuresBtn');
-    const featuresMenu = document.getElementById('featuresMenu');
-    const openEqBtn = document.getElementById('openEqBtn');
-    const eqPanel = document.getElementById('eqPanel');
-    const eqCloseBtn = document.getElementById('eqCloseBtn');
-    const eqBass = document.getElementById('eqBass');
-    const eqMid = document.getElementById('eqMid');
-    const eqTreble = document.getElementById('eqTreble');
+    // Audio & WebAudio setup
+    let audioCtx, audioSource, gainNode;
+    let bassFilter, midFilter, trebleFilter;
+    let audio = new Audio();
+    let isPlaying = false;
 
-    // Draggable EQ Panel Setup
-    (function setupDraggableEQ() {
-      let isDragging = false;
-      let dragOffsetX, dragOffsetY;
+    // Initialize Web Audio API context and filters for EQ
+    function setupAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioSource = audioCtx.createMediaElementSource(audio);
 
-      eqPanel.querySelector('#eqHeader').addEventListener('mousedown', (e) => {
-        isDragging = true;
-        dragOffsetX = e.clientX - eqPanel.offsetLeft;
-        dragOffsetY = e.clientY - eqPanel.offsetTop;
-        eqPanel.style.cursor = 'grabbing';
-      });
+        bassFilter = audioCtx.createBiquadFilter();
+        bassFilter.type = 'lowshelf';
+        bassFilter.frequency.value = 200;
 
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-        eqPanel.style.cursor = 'default';
-      });
+        midFilter = audioCtx.createBiquadFilter();
+        midFilter.type = 'peaking';
+        midFilter.frequency.value = 1000;
+        midFilter.Q.value = 1;
 
-      document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          let x = e.clientX - dragOffsetX;
-          let y = e.clientY - dragOffsetY;
-          // Keep panel in viewport
-          x = Math.min(Math.max(0, x), window.innerWidth - eqPanel.offsetWidth);
-          y = Math.min(Math.max(0, y), window.innerHeight - eqPanel.offsetHeight);
-          eqPanel.style.left = x + 'px';
-          eqPanel.style.top = y + 'px';
-        }
-      });
-    })();
+        trebleFilter = audioCtx.createBiquadFilter();
+        trebleFilter.type = 'highshelf';
+        trebleFilter.frequency.value = 3000;
 
-    // Load songs from Google Drive folder
-    async function loadSongsFromDrive() {
-      // We'll call the Drive API files.list endpoint
-      // to get files from the specified folder
-      // Supports mp3, m4a, wav
+        gainNode = audioCtx.createGain();
 
-      const url = `https://www.googleapis.com/drive/v3/files?key=${DRIVE_API_KEY}` +
-        `&q='${DRIVE_FOLDER_ID}'+in+parents+and+mimeType+contains+'audio/'` +
-        `&fields=files(id,name,mimeType,size,createdTime)` +
-        `&orderBy=name`;
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.files) {
-          // Map files to song objects
-          songs = data.files.map(file => ({
-            id: file.id,
-            name: file.name,
-            artist: 'Unknown Artist',
-            album: 'Unknown Album',
-            duration: 0,
-            url: `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${DRIVE_API_KEY}`
-          }));
-          filteredSongs = songs;
-          renderSongsTable();
-        } else {
-          console.error('No files found in Drive folder or invalid API key.');
-        }
-      } catch (err) {
-        console.error('Failed to load songs from Drive:', err);
+        audioSource.connect(bassFilter);
+        bassFilter.connect(midFilter);
+        midFilter.connect(trebleFilter);
+        trebleFilter.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
       }
     }
 
-    // Render songs table rows
-    function renderSongsTable() {
-      songsTbody.innerHTML = '';
-      filteredSongs.forEach((song, i) => {
-        const tr = document.createElement('tr');
-        tr.tabIndex = 0;
-        tr.dataset.index = i;
+    // Connect WebAudio on play
+    audio.onplay = () => {
+      setupAudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    };
 
-        tr.innerHTML = `
-          <td class="name">${song.name}</td>
-          <td class="artist">${song.artist}</td>
-          <td class="album">${song.album}</td>
-          <td class="duration">${song.duration > 0 ? formatDuration(song.duration) : '--:--'}</td>
-        `;
+    // Adjust EQ filter gains from sliders
+    bassSlider.addEventListener('input', () => {
+      bassFilter.gain.value = parseFloat(bassSlider.value);
+    });
+    midSlider.addEventListener('input', () => {
+      midFilter.gain.value = parseFloat(midSlider.value);
+    });
+    trebleSlider.addEventListener('input', () => {
+      trebleFilter.gain.value = parseFloat(trebleSlider.value);
+    });
 
-        // Click selects and plays song
-        tr.addEventListener('click', () => {
-          playSongAtIndex(i);
-        });
-        // Keyboard enter to play song
-        tr.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            playSongAtIndex(i);
-          }
-        });
+    // Tracks & playlists
+    let tracks = [];
+    let filteredTracks = [];
+    let playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
+    let currentTrackIndex = -1;
+    let queue = [];
 
-        songsTbody.appendChild(tr);
-      });
-      updateSelectedSongHighlight();
-    }
+    // Volume default
+    audio.volume = parseFloat(volumeSlider.value);
 
-    // Format seconds to MM:SS
+    // Format seconds to mm:ss
     function formatDuration(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return m + ':' + (s < 10 ? '0' : '') + s;
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Play song at given index
-    async function playSongAtIndex(index) {
-      if (index < 0 || index >= filteredSongs.length) return;
-      currentIndex = index;
-      const song = filteredSongs[index];
+    // Load tracks from Google Drive folder
+    async function loadAllTracks() {
+      let allFiles = [];
+      let pageToken = '';
+      try {
+        do {
+          const query = encodeURIComponent(`'${folderId}' in parents and (mimeType contains 'audio/')`);
+          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,mimeType),nextPageToken&pageSize=100&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.files) allFiles = allFiles.concat(data.files);
+          pageToken = data.nextPageToken || '';
+        } while (pageToken);
 
-      // Unlock Audio Context on user interaction (required by some browsers)
-      if (audioCtx.state === 'suspended') {
-        await audioCtx.resume();
-      }
+        allFiles.sort((a,b) => a.name.localeCompare(b.name));
 
-      audio.src = song.url;
-      audio.play().then(() => {
-        isPlaying = true;
-        updatePlayPauseBtn();
-        nowPlayingTitle.textContent = song.name;
-        nowPlayingArtist.textContent = song.artist;
-        updateSelectedSongHighlight();
-        addSongToQueue(song);
-      }).catch(err => {
-        console.error('Playback error:', err);
-      });
-    }
+        tracks = allFiles.map(f => ({
+          id: f.id,
+          name: f.name,
+          artist: 'Unknown Artist',
+          album: 'Unknown Album',
+          duration: 0,
+        }));
 
-    // Update selected song highlight in the table
-    function updateSelectedSongHighlight() {
-      Array.from(songsTbody.children).forEach(tr => {
-        tr.classList.remove('selected');
-      });
-      if (currentIndex >= 0 && currentIndex < songsTbody.children.length) {
-        songsTbody.children[currentIndex].classList.add('selected');
-      }
-    }
-
-    // Play/pause toggle
-    function togglePlayPause() {
-      if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-      } else {
-        audio.play();
-        isPlaying = true;
-      }
-      updatePlayPauseBtn();
-    }
-
-    // Update play/pause button icon
-    function updatePlayPauseBtn() {
-      playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
-      playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
-    }
-
-    // Play next song
-    function playNext() {
-      if (currentIndex + 1 < filteredSongs.length) {
-        playSongAtIndex(currentIndex + 1);
-      } else {
-        // Loop back to start
-        playSongAtIndex(0);
+        filteredTracks = [...tracks];
+        renderSongs();
+      } catch (err) {
+        console.error('Error loading tracks', err);
+        nowPlayingTitle.textContent = 'Error loading tracks';
       }
     }
 
-    // Play previous song
-    function playPrev() {
-      if (currentIndex - 1 >= 0) {
-        playSongAtIndex(currentIndex - 1);
-      } else {
-        playSongAtIndex(filteredSongs.length - 1);
-      }
-    }
-
-    // Update progress bar and times
-    function updateProgress() {
-      if (!audio.duration) return;
-      const percent = (audio.currentTime / audio.duration) * 100;
-      progressFilled.style.width = percent + '%';
-      currentTimeEl.textContent = formatDuration(audio.currentTime);
-      durationTimeEl.textContent = formatDuration(audio.duration);
-      progressBar.setAttribute('aria-valuenow', Math.floor(percent));
-      progressBar.setAttribute('aria-valuetext', formatDuration(audio.currentTime));
-    }
-
-    // Seek audio to position based on click on progress bar
-    function seekAudio(event) {
-      const rect = progressBar.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const seekPercent = clickX / rect.width;
-      if (audio.duration) {
-        audio.currentTime = seekPercent * audio.duration;
-      }
-    }
-
-    // Adjust volume
-    function setVolume(value) {
-      audio.volume = value;
-    }
-
-    // Search songs
-    function filterSongs() {
-      const query = searchInput.value.toLowerCase();
-      filteredSongs = songs.filter(s =>
-        s.name.toLowerCase().includes(query) ||
-        s.artist.toLowerCase().includes(query) ||
-        s.album.toLowerCase().includes(query)
-      );
-      renderSongsTable();
-    }
-
-    // Toggle dark/light mode
-    function toggleTheme() {
-      document.body.classList.toggle('light');
-      if (document.body.classList.contains('light')) {
-        toggleThemeBtn.textContent = 'Light Mode';
-      } else {
-        toggleThemeBtn.textContent = 'Dark Mode';
-      }
-    }
-
-    // Add song to Up Next queue
-    function addSongToQueue(song) {
-      if (!upNextQueue.find(s => s.id === song.id)) {
-        upNextQueue.push(song);
-        renderQueue();
-      }
-    }
-
-    // Render Up Next queue list
-    function renderQueue() {
-      queueList.innerHTML = '';
-      upNextQueue.forEach((song, i) => {
-        const div = document.createElement('div');
-        div.className = 'queue-item';
-        if (currentIndex >= 0 && filteredSongs[currentIndex].id === song.id) {
-          div.classList.add('selected');
-        }
-        div.tabIndex = 0;
-        div.innerHTML = `
-          <span>${song.name}</span>
-          <button title="Remove from Queue" aria-label="Remove ${song.name} from queue">&times;</button>
-        `;
-        div.querySelector('button').addEventListener('click', e => {
-          e.stopPropagation();
-          upNextQueue.splice(i, 1);
-          renderQueue();
-        });
-        div.addEventListener('click', () => {
-          // Play this queued song if it's in filteredSongs
-          const idx = filteredSongs.findIndex(s => s.id === song.id);
-          if (idx !== -1) {
-            playSongAtIndex(idx);
-          }
-        });
-        div.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            const idx = filteredSongs.findIndex(s => s.id === song.id);
-            if (idx !== -1) {
-              playSongAtIndex(idx);
-            }
-          }
-        });
-        queueList.appendChild(div);
-      });
-    }
-
-    // Features Menu toggle
-    featuresBtn.addEventListener('click', () => {
-      featuresMenu.classList.toggle('show');
-    });
-    // Close features menu if clicking outside
-    document.addEventListener('click', (e) => {
-      if (!featuresBtn.contains(e.target) && !featuresMenu.contains(e.target)) {
-        featuresMenu.classList.remove('show');
-      }
-    });
-
-    // Open EQ Panel
-    openEqBtn.addEventListener('click', () => {
-      featuresMenu.classList.remove('show');
-      eqPanel.style.display = 'block';
-    });
-    // Close EQ Panel
-    eqCloseBtn.addEventListener('click', () => {
-      eqPanel.style.display = 'none';
-    });
-
-    // EQ Slider controls update EQ filters
-    eqBass.addEventListener('input', () => {
-      bassEQ.gain.value = eqBass.value;
-    });
-    eqMid.addEventListener('input', () => {
-      midEQ.gain.value = eqMid.value;
-    });
-    eqTreble.addEventListener('input', () => {
-      trebleEQ.gain.value = eqTreble.value;
-    });
-
-    // Setup volume control
-    volumeSlider.addEventListener('input', () => {
-      setVolume(volumeSlider.value);
-    });
-    setVolume(volumeSlider.value);
-
-    // Setup play/pause button
-    playPauseBtn.addEventListener('click', () => {
-      togglePlayPause();
-    });
-
-    prevBtn.addEventListener('click', () => {
-      playPrev();
-    });
-
-    nextBtn.addEventListener('click', () => {
-      playNext();
-    });
-
-    // Progress bar interactions
-    progressBar.addEventListener('click', seekAudio);
-    progressBar.addEventListener('keydown', e => {
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        audio.currentTime = Math.max(0, audio.currentTime - 5);
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
-      }
-    });
-
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', () => {
-      playNext();
-    });
-
-    // Search input
-    searchInput.addEventListener('input', filterSongs);
-
-    // Theme toggle
-    toggleThemeBtn.addEventListener('click', toggleTheme);
-
-    // New Playlist creation (basic)
-    btnNewPlaylist.addEventListener('click', () => {
-      const name = prompt('Enter new playlist name:');
-      if (!name) return;
-      if (playlists[name]) {
-        alert('Playlist already exists!');
-        return;
-      }
-      playlists[name] = [];
-      savePlaylists();
-      renderPlaylists();
-    });
-
-    // Save playlists to localStorage
-    function savePlaylists() {
-      localStorage.setItem('playlists', JSON.stringify(playlists));
-    }
-
-    // Render playlists list
+    // Render playlists in sidebar
     function renderPlaylists() {
       playlistsDiv.innerHTML = '';
-      for (const name in playlists) {
+      for (const plName in playlists) {
         const btn = document.createElement('button');
-        btn.textContent = name;
-        btn.title = `Playlist: ${name}`;
-        btn.addEventListener('click', () => {
-          loadPlaylist(name);
-        });
+        btn.textContent = plName;
+        btn.onclick = () => {
+          filteredTracks = playlists[plName];
+          currentTrackIndex = -1;
+          renderSongs();
+          highlightPlaylistButton(plName);
+        };
         playlistsDiv.appendChild(btn);
       }
     }
 
-    // Load a playlist to filteredSongs view
-    function loadPlaylist(name) {
-      currentPlaylist = name;
-      const songIds = playlists[name];
-      filteredSongs = songs.filter(s => songIds.includes(s.id));
-      renderSongsTable();
+    function highlightPlaylistButton(name) {
+      [...playlistsDiv.children].forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === name);
+      });
       btnAllSongs.classList.remove('active');
-      Array.from(playlistsDiv.children).forEach(b => b.classList.remove('active'));
-      const playlistBtn = Array.from(playlistsDiv.children).find(b => b.textContent === name);
-      if (playlistBtn) playlistBtn.classList.add('active');
-      searchInput.value = '';
     }
 
-    // Load All Songs
-    btnAllSongs.addEventListener('click', () => {
-      filteredSongs = songs;
-      renderSongsTable();
-      currentPlaylist = null;
-      btnAllSongs.classList.add('active');
-      Array.from(playlistsDiv.children).forEach(b => b.classList.remove('active'));
-      searchInput.value = '';
+    // Render songs table
+    function renderSongs() {
+      songsBody.innerHTML = '';
+      filteredTracks.forEach((track, index) => {
+        const tr = document.createElement('tr');
+        tr.tabIndex = 0;
+        tr.className = index === currentTrackIndex ? 'selected' : '';
+        tr.onclick = () => playTrack(index);
+        tr.onkeydown = (e) => { if(e.key === 'Enter') playTrack(index); };
+
+        const tdName = document.createElement('td');
+        tdName.className = 'name';
+        tdName.textContent = track.name;
+
+        const tdArtist = document.createElement('td');
+        tdArtist.className = 'artist';
+        tdArtist.textContent = track.artist;
+
+        const tdAlbum = document.createElement('td');
+        tdAlbum.className = 'album';
+        tdAlbum.textContent = track.album;
+
+        const tdDuration = document.createElement('td');
+        tdDuration.className = 'duration';
+        tdDuration.textContent = formatDuration(track.duration);
+
+        tr.append(tdName, tdArtist, tdAlbum, tdDuration);
+        songsBody.appendChild(tr);
+      });
+    }
+
+    // Play track by index
+    async function playTrack(index) {
+      if (index < 0 || index >= filteredTracks.length) return;
+      currentTrackIndex = index;
+      const track = filteredTracks[index];
+      audio.src = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
+      audio.play().catch(() => {});
+      isPlaying = true;
+      btnPlayPause.textContent = '⏸️';
+      nowPlayingTitle.textContent = track.name;
+      nowPlayingArtist.textContent = `${track.artist} — ${track.album}`;
+      updateSelectedSong();
+      addToQueue(track);
+
+      audio.onloadedmetadata = () => {
+        track.duration = audio.duration;
+        renderSongs();
+      };
+    }
+
+    function updateSelectedSong() {
+      [...songsBody.children].forEach((tr, i) => {
+        tr.classList.toggle('selected', i === currentTrackIndex);
+      });
+    }
+
+    function addToQueue(track) {
+      if (!queue.find(t => t.id === track.id)) {
+        queue.push(track);
+        renderQueue();
+      }
+    }
+
+    function renderQueue() {
+      queueList.innerHTML = '';
+      queue.forEach((track, i) => {
+        const div = document.createElement('div');
+        div.className = 'queue-item';
+        div.textContent = track.name;
+        if (i === currentTrackIndex) div.classList.add('selected');
+        div.onclick = () => playTrack(i);
+        queueList.appendChild(div);
+      });
+    }
+
+    // Playback controls
+    function playPause() {
+      if (!audio.src) return;
+      if (isPlaying) {
+        audio.pause();
+        btnPlayPause.textContent = '▶️';
+      } else {
+        audio.play().catch(() => {});
+        btnPlayPause.textContent = '⏸️';
+      }
+      isPlaying = !isPlaying;
+    }
+    function nextTrack() {
+      if (queue.length === 0) return;
+      currentTrackIndex = (currentTrackIndex + 1) % queue.length;
+      playTrack(currentTrackIndex);
+    }
+    function prevTrack() {
+      if (queue.length === 0) return;
+      currentTrackIndex = (currentTrackIndex - 1 + queue.length) % queue.length;
+      playTrack(currentTrackIndex);
+    }
+    function shuffleQueue() {
+      if (queue.length === 0) return;
+      for (let i = queue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [queue[i], queue[j]] = [queue[j], queue[i]];
+      }
+      renderQueue();
+      currentTrackIndex = 0;
+      playTrack(currentTrackIndex);
+    }
+
+    // Volume control
+    volumeSlider.oninput = () => {
+      audio.volume = parseFloat(volumeSlider.value);
+    };
+
+    // Progress bar control
+    audio.ontimeupdate = () => {
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFilled.style.width = percent + '%';
+        currentTimeElem.textContent = formatDuration(audio.currentTime);
+        durationTimeElem.textContent = formatDuration(audio.duration);
+      }
+    };
+
+    function seek(e) {
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      audio.currentTime = percent * audio.duration;
+    }
+    progressBar.addEventListener('click', seek);
+    progressContainer.addEventListener('keydown', e => {
+      if(e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 5);
+      else if(e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
     });
 
-    // Initialization
-    async function init() {
+    // Search/filter songs
+    searchInput.oninput = () => {
+      const q = searchInput.value.toLowerCase();
+      filteredTracks = tracks.filter(t => t.name.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q) || t.album.toLowerCase().includes(q));
+      currentTrackIndex = -1;
+      renderSongs();
+    };
+
+    // Playlist handling
+    btnNewPlaylist.onclick = () => {
+      const plName = prompt('Enter new playlist name:');
+      if (!plName) return;
+      if (playlists[plName]) {
+        alert('Playlist already exists!');
+        return;
+      }
+      playlists[plName] = [];
+      savePlaylists();
       renderPlaylists();
-      await loadSongsFromDrive();
-      filteredSongs = songs;
-      renderSongsTable();
-      btnAllSongs.classList.add('active');
-      // Dark mode default is ON, so button says Dark Mode
-      toggleThemeBtn.textContent = 'Dark Mode';
+    };
+
+    function savePlaylists() {
+      localStorage.setItem('playlists', JSON.stringify(playlists));
     }
 
+    function addToPlaylist(plName, track) {
+      if (!playlists[plName]) return;
+      if (!playlists[plName].some(t => t.id === track.id)) {
+        playlists[plName].push(track);
+        savePlaylists();
+      }
+    }
+
+    // Prevent right-click on playlist buttons
+    playlistsDiv.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (e.target.tagName === 'BUTTON') {
+        alert('Right-click disabled on playlist buttons.');
+      }
+    });
+
+    // Right-click menu on songs for adding to playlist
+    songsBody.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (filteredTracks.length === 0 || currentTrackIndex === -1) return;
+
+      // Remove any existing menu first
+      const oldMenu = document.getElementById('contextMenu');
+      if (oldMenu) oldMenu.remove();
+
+      const menu = document.createElement('div');
+      menu.id = 'contextMenu';
+      menu.style.position = 'fixed';
+      menu.style.left = e.pageX + 'px';
+      menu.style.top = e.pageY + 'px';
+      menu.style.background = '#282828';
+      menu.style.color = '#eee';
+      menu.style.border = '1px solid #1db954';
+      menu.style.padding = '5px';
+      menu.style.borderRadius = '6px';
+      menu.style.zIndex = 9999;
+      menu.style.minWidth = '160px';
+
+      Object.keys(playlists).forEach(plName => {
+        const item = document.createElement('div');
+        item.textContent = `Add to "${plName}"`;
+        item.style.padding = '5px 10px';
+        item.style.cursor = 'pointer';
+        item.onmouseenter = () => { item.style.background = '#1db954'; item.style.color = '#000'; };
+        item.onmouseleave = () => { item.style.background = ''; item.style.color = '#eee'; };
+        item.onclick = () => {
+          addToPlaylist(plName, filteredTracks[currentTrackIndex]);
+          alert(`Added to playlist "${plName}"`);
+          menu.remove();
+        };
+        menu.appendChild(item);
+      });
+
+      document.body.appendChild(menu);
+
+      const removeMenu = () => {
+        if (menu.parentNode) menu.parentNode.removeChild(menu);
+        document.removeEventListener('click', removeMenu);
+      };
+      document.addEventListener('click', removeMenu);
+    });
+
+    // Button handlers
+    btnAllSongs.onclick = () => {
+      filteredTracks = [...tracks];
+      currentTrackIndex = -1;
+      renderSongs();
+      btnAllSongs.classList.add('active');
+      [...playlistsDiv.children].forEach(b => b.classList.remove('active'));
+    };
+    btnPlayPause.onclick = playPause;
+    btnNext.onclick = nextTrack;
+    btnPrev.onclick = prevTrack;
+    btnShuffle.onclick = shuffleQueue;
+    toggleThemeBtn.onclick = () => {
+      if(document.body.classList.contains('light')) {
+        document.body.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.add('light');
+        localStorage.setItem('theme', 'light');
+      }
+    };
+
+    // Load saved theme
+    (function(){
+      const savedTheme = localStorage.getItem('theme');
+      if(savedTheme === 'light') document.body.classList.add('light');
+    })();
+
+    // Initialize app
+    async function init() {
+      renderPlaylists();
+      await loadAllTracks();
+      btnAllSongs.click();
+    }
     init();
+
   </script>
 </body>
 </html>
