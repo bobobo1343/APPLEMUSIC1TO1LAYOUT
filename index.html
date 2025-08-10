@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>iTunes Replica Player</title>
+  <title>iTunes Replica Player with Shuffle & Repeat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     /* Reset & basics */
@@ -69,13 +69,14 @@
       overflow: hidden;
     }
     aside {
-      width: 250px;
+      width: 280px;
       background: #000;
       padding: 20px 10px;
       border-right: 1px solid #333;
       display: flex;
       flex-direction: column;
       transition: background 0.3s, color 0.3s;
+      overflow-y: auto;
     }
     body.light aside {
       background: #f0f0f0;
@@ -147,6 +148,7 @@
       overflow-y: auto;
       background: #121212;
       transition: background 0.3s;
+      min-width: 600px;
     }
     body.light #songTableContainer {
       background: #f9f9f9;
@@ -155,7 +157,6 @@
       width: 100%;
       border-collapse: collapse;
       user-select: none;
-      min-width: 600px;
     }
     thead tr {
       border-bottom: 1px solid #333;
@@ -171,6 +172,10 @@
       font-weight: 600;
       text-align: left;
       font-size: 13px;
+      position: sticky;
+      top: 0;
+      background: inherit;
+      z-index: 2;
     }
     tbody tr {
       border-bottom: 1px solid #282828;
@@ -250,8 +255,9 @@
     #playerControls {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
     #playerControls button {
       background: none;
@@ -263,9 +269,13 @@
       user-select: none;
       padding: 4px 8px;
       position: relative;
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 6px;
     }
     #playerControls button:hover {
       color: #1db954;
+      background-color: rgba(29, 185, 84, 0.15);
     }
 
     /* Progress bar */
@@ -275,6 +285,7 @@
       user-select: none;
       display: flex;
       flex-direction: column;
+      max-width: 600px;
     }
     #progressBar {
       width: 100%;
@@ -304,7 +315,7 @@
 
     /* Volume */
     #volumeContainer {
-      width: 150px;
+      width: 160px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -313,6 +324,13 @@
     #volumeIcon {
       font-size: 22px;
       user-select: none;
+      cursor: pointer;
+      user-select: none;
+      color: inherit;
+      transition: color 0.3s;
+    }
+    #volumeIcon:hover {
+      color: #1db954;
     }
     #volumeSlider {
       flex-grow: 1;
@@ -324,7 +342,7 @@
       position: absolute;
       bottom: 110px;
       right: 20px;
-      width: 300px;
+      width: 320px;
       background: #181818;
       border: 1px solid #1db954;
       border-radius: 12px;
@@ -379,6 +397,67 @@
       color: #1db954;
     }
 
+    /* Queue container */
+    #queueContainer {
+      margin-top: 20px;
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+      color: #ccc;
+      font-size: 14px;
+      max-height: 140px;
+      overflow-y: auto;
+      user-select: none;
+    }
+    body.light #queueContainer {
+      background: #eee;
+      color: #111;
+    }
+    #queueContainer h3 {
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      font-size: 16px;
+      color: #1db954;
+      user-select: text;
+    }
+    #queueList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    #queueList li {
+      padding: 4px 6px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #queueList li:hover {
+      background: #1db954;
+      color: #000;
+      font-weight: 700;
+    }
+    #queueList li.active {
+      background: #1db954;
+      color: #000;
+      font-weight: 700;
+    }
+
+    /* Scrollbar styling */
+    #songTableContainer::-webkit-scrollbar,
+    #queueContainer::-webkit-scrollbar,
+    aside::-webkit-scrollbar {
+      width: 8px;
+    }
+    #songTableContainer::-webkit-scrollbar-thumb,
+    #queueContainer::-webkit-scrollbar-thumb,
+    aside::-webkit-scrollbar-thumb {
+      background: #1db954;
+      border-radius: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -392,6 +471,10 @@
       <h2>Library</h2>
       <button id="btnLoadSongs" class="active" aria-pressed="true">All Songs</button>
       <!-- Future playlists can go here -->
+      <div id="queueContainer" aria-label="Playback Queue" tabindex="0">
+        <h3>Up Next</h3>
+        <ul id="queueList" role="list"></ul>
+      </div>
     </aside>
 
     <section>
@@ -419,10 +502,12 @@
       <div id="nowPlayingTitle">No song playing</div>
       <div id="nowPlayingArtistAlbum"></div>
     </div>
-    <div id="playerControls">
+    <div id="playerControls" aria-label="Player controls">
       <button id="btnPrev" title="Previous" aria-label="Previous track">⏮️</button>
       <button id="btnPlayPause" title="Play/Pause" aria-label="Play or pause">▶️</button>
       <button id="btnNext" title="Next" aria-label="Next track">⏭️</button>
+      <button id="btnShuffle" title="Shuffle" aria-label="Toggle shuffle">🔀</button>
+      <button id="btnRepeat" title="Repeat Mode" aria-label="Change repeat mode">🔁</button>
       <button id="eqToggleBtn" title="Equalizer" aria-haspopup="true" aria-expanded="false" aria-controls="eqDropdown">EQ</button>
     </div>
     <div id="progressContainer">
@@ -435,7 +520,7 @@
       </div>
     </div>
     <div id="volumeContainer">
-      <div id="volumeIcon" aria-label="Volume level">🔊</div>
+      <div id="volumeIcon" aria-label="Volume level" title="Toggle mute">🔊</div>
       <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume control" />
     </div>
   </div>
@@ -459,60 +544,72 @@
   <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.5/dist/jsmediatags.min.js"></script>
 
   <script>
-    const API_KEY = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
-    const FOLDER_ID = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
+    // Your Google Drive API key and folder ID here:
+    const API_KEY = 'AIzaSyDsYE91yeURK3t8Ks1m4FA25rRN6O9pNmM'; // replace with your API key
+    const FOLDER_ID = '1Q7W4e3eYZL6f8gh8tMvLP4BzVjhFg9sG'; // replace with your folder ID
 
     // DOM elements
-    const body = document.body;
-    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
-    const btnLoadSongs = document.getElementById('btnLoadSongs');
-    const searchInput = document.getElementById('searchInput');
     const songTableBody = document.getElementById('songTableBody');
-    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
-    const nowPlayingArtistAlbum = document.getElementById('nowPlayingArtistAlbum');
-    const audio = document.getElementById('audio');
+    const searchInput = document.getElementById('searchInput');
     const btnPlayPause = document.getElementById('btnPlayPause');
     const btnPrev = document.getElementById('btnPrev');
     const btnNext = document.getElementById('btnNext');
+    const btnShuffle = document.getElementById('btnShuffle');
+    const btnRepeat = document.getElementById('btnRepeat');
+    const eqToggleBtn = document.getElementById('eqToggleBtn');
+    const eqDropdown = document.getElementById('eqDropdown');
+    const bassSlider = document.getElementById('bassSlider');
+    const trebleSlider = document.getElementById('trebleSlider');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtistAlbum = document.getElementById('nowPlayingArtistAlbum');
     const progressBar = document.getElementById('progressBar');
     const progressFilled = document.getElementById('progressFilled');
     const currentTimeEl = document.getElementById('currentTime');
     const durationTimeEl = document.getElementById('durationTime');
     const volumeSlider = document.getElementById('volumeSlider');
-    const eqToggleBtn = document.getElementById('eqToggleBtn');
-    const eqDropdown = document.getElementById('eqDropdown');
-    const bassSlider = document.getElementById('bassSlider');
-    const trebleSlider = document.getElementById('trebleSlider');
+    const volumeIcon = document.getElementById('volumeIcon');
+    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    const queueList = document.getElementById('queueList');
 
+    const audio = document.getElementById('audio');
+
+    // Playback state
     let tracks = [];
     let filteredTracks = [];
-    let currentTrackIndex = -1;
+    let queue = [];
+    let currentTrackIndex = -1; // index in filteredTracks, NOT queue
     let isPlaying = false;
+    let isShuffle = false;
+    let repeatMode = 'none'; // 'none', 'all', 'one'
+    let audioCtx, sourceNode, bassFilter, trebleFilter;
+
+    // Sorting state
     let sortField = 'name';
     let sortDirection = 'asc';
 
-    // Audio Context & EQ nodes
-    let audioCtx, sourceNode, bassFilter, trebleFilter;
+    // Initialize Web Audio API context and EQ filters
+    function setupAudioContext() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = "lowshelf";
+      bassFilter.frequency.setValueAtTime(200, audioCtx.currentTime);
+      trebleFilter = audioCtx.createBiquadFilter();
+      trebleFilter.type = "highshelf";
+      trebleFilter.frequency.setValueAtTime(3000, audioCtx.currentTime);
 
-    // Initialization
-    async function init() {
-      setupAudioContext();
-      setupEventListeners();
-      updateVolume(volumeSlider.value);
-      await loadAllSongs();
-      filterSongs();
-      renderSongList();
+      sourceNode.connect(bassFilter);
+      bassFilter.connect(trebleFilter);
+      trebleFilter.connect(audioCtx.destination);
     }
 
-    // Fetch all audio files from Google Drive Folder (pagination handled)
-    async function loadAllSongs() {
+    // Load all songs from Google Drive folder (handle pagination)
+    async function loadSongsFromDrive() {
       tracks = [];
       let nextPageToken = '';
-      const baseUrl = `https://www.googleapis.com/drive/v3/files`;
       try {
         do {
-          let query = encodeURIComponent(`'${FOLDER_ID}' in parents and trashed=false and (mimeType contains 'audio/')`);
-          let url = `${baseUrl}?q=${query}&fields=nextPageToken,files(id,name,mimeType,createdTime,modifiedTime)&pageSize=100&key=${API_KEY}`;
+          let url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType contains 'audio/'&fields=nextPageToken,files(id,name,mimeType)&key=${API_KEY}&pageSize=100`;
           if (nextPageToken) url += `&pageToken=${nextPageToken}`;
 
           const res = await fetch(url);
@@ -539,9 +636,8 @@
       }
     }
 
-    // Render the song list table rows
+    // Render the song list with sorting and filtering
     function renderSongList() {
-      // Sort filteredTracks before rendering
       filteredTracks.sort((a, b) => {
         let fa = a[sortField] || '';
         let fb = b[sortField] || '';
@@ -560,10 +656,13 @@
       songTableBody.innerHTML = '';
       filteredTracks.forEach((track, idx) => {
         const tr = document.createElement('tr');
-        tr.className = idx === currentTrackIndex ? 'selected' : '';
+        tr.className = (idx === currentTrackIndex) ? 'selected' : '';
         tr.tabIndex = 0;
         tr.setAttribute('role', 'row');
-        tr.onclick = () => playTrack(idx);
+        tr.onclick = () => {
+          playTrack(idx);
+          addToQueue(idx);
+        };
         tr.onkeydown = e => { if (e.key === 'Enter') playTrack(idx); };
 
         const tdName = document.createElement('td');
@@ -598,20 +697,18 @@
       return `${m}:${s.toString().padStart(2, '0')}`;
     }
 
-    // Play a track by index
+    // Play a track by index in filteredTracks
     async function playTrack(idx) {
       if (idx < 0 || idx >= filteredTracks.length) return;
       currentTrackIndex = idx;
       const track = filteredTracks[idx];
 
-      // If metadata not loaded, try to load it now
       if (!track._metaLoaded) {
-        try {
-          await loadMetadata(track);
-        } catch {
-          // ignore error, fallback to existing info
-        }
+        await loadMetadata(track);
       }
+
+      // Use Web Audio context if suspended
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
 
       audio.src = track.url;
       try {
@@ -620,36 +717,36 @@
         updateNowPlaying(track);
         renderSongList();
         btnPlayPause.textContent = '⏸️';
+        highlightQueueCurrent();
       } catch (e) {
         console.error('Playback error:', e);
         alert('Error playing audio. Try another track.');
       }
     }
 
-    // Load metadata using jsmediatags from the remote file URL
+    // Load metadata using jsmediatags, fallback to audio element duration
     async function loadMetadata(track) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         jsmediatags.read(track.url, {
-          onSuccess: function(tag) {
+          onSuccess: (tag) => {
             const tags = tag.tags;
             if (tags.title) track.name = tags.title;
             if (tags.artist) track.artist = tags.artist;
             if (tags.album) track.album = tags.album;
-            if (tags.duration) track.duration = tags.duration;
-            track._metaLoaded = true;
 
-            // Attempt to extract duration from audio element by preloading
+            // Attempt to get duration
             const tempAudio = new Audio(track.url);
             tempAudio.addEventListener('loadedmetadata', () => {
               track.duration = tempAudio.duration;
+              track._metaLoaded = true;
               resolve();
             });
             tempAudio.addEventListener('error', () => {
-              resolve(); // ignore duration error
+              track._metaLoaded = true;
+              resolve();
             });
           },
-          onError: function(error) {
-            // fallback: try to get duration from audio element
+          onError: () => {
             const tempAudio = new Audio(track.url);
             tempAudio.addEventListener('loadedmetadata', () => {
               track.duration = tempAudio.duration;
@@ -665,13 +762,13 @@
       });
     }
 
-    // Update Now Playing info area
+    // Update now playing bar
     function updateNowPlaying(track) {
       nowPlayingTitle.textContent = track.name;
       nowPlayingArtistAlbum.textContent = `${track.artist} — ${track.album}`;
     }
 
-    // Play or pause toggle
+    // Play/pause toggle
     function togglePlayPause() {
       if (!audio.src) return;
       if (isPlaying) {
@@ -684,23 +781,62 @@
       isPlaying = !isPlaying;
     }
 
-    // Play previous track
+    // Play previous track respecting repeat/shuffle
     function playPrev() {
+      if (queue.length === 0) return;
+      if (repeatMode === 'one') {
+        playTrack(currentTrackIndex);
+        return;
+      }
       if (currentTrackIndex === -1) return;
-      currentTrackIndex--;
-      if (currentTrackIndex < 0) currentTrackIndex = filteredTracks.length -1;
-      playTrack(currentTrackIndex);
+
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * filteredTracks.length);
+        playTrack(randomIndex);
+        return;
+      }
+
+      // Play previous in queue
+      const currentQueueIdx = queue.findIndex(i => i === currentTrackIndex);
+      let prevQueueIdx = currentQueueIdx - 1;
+      if (prevQueueIdx < 0) {
+        if (repeatMode === 'all') prevQueueIdx = queue.length - 1;
+        else return;
+      }
+      playTrack(queue[prevQueueIdx]);
     }
 
-    // Play next track
+    // Play next track respecting repeat/shuffle
     function playNext() {
+      if (queue.length === 0) return;
+      if (repeatMode === 'one') {
+        playTrack(currentTrackIndex);
+        return;
+      }
       if (currentTrackIndex === -1) return;
-      currentTrackIndex++;
-      if (currentTrackIndex >= filteredTracks.length) currentTrackIndex = 0;
-      playTrack(currentTrackIndex);
+
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * filteredTracks.length);
+        playTrack(randomIndex);
+        return;
+      }
+
+      // Play next in queue
+      const currentQueueIdx = queue.findIndex(i => i === currentTrackIndex);
+      let nextQueueIdx = currentQueueIdx + 1;
+      if (nextQueueIdx >= queue.length) {
+        if (repeatMode === 'all') nextQueueIdx = 0;
+        else {
+          audio.pause();
+          isPlaying = false;
+          btnPlayPause.textContent = '▶️';
+          return;
+        }
+      }
+      playTrack(queue[nextQueueIdx]);
     }
 
-    // Update progress bar and time display
+    // Update progress bar
     function updateProgress() {
       if (!audio.duration) return;
       const percent = (audio.currentTime / audio.duration) * 100;
@@ -718,7 +854,7 @@
       audio.currentTime = percent * audio.duration;
     }
 
-    // Filter songs by search
+    // Search filter
     function filterSongs() {
       const val = searchInput.value.toLowerCase();
       filteredTracks = tracks.filter(t =>
@@ -726,42 +862,41 @@
         t.artist.toLowerCase().includes(val) ||
         t.album.toLowerCase().includes(val)
       );
+      resetQueue();
       renderSongList();
+      renderQueue();
     }
 
-    // Toggle light/dark theme
-    function toggleTheme() {
-      body.classList.toggle('light');
-    }
-
-    // Update volume from slider
+    // Volume control
     function updateVolume(val) {
       audio.volume = val;
       volumeSlider.value = val;
+      updateVolumeIcon();
     }
 
-    // Setup Web Audio API context and EQ filters
-    function setupAudioContext() {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      sourceNode = audioCtx.createMediaElementSource(audio);
-      bassFilter = audioCtx.createBiquadFilter();
-      bassFilter.type = "lowshelf";
-      bassFilter.frequency.setValueAtTime(200, audioCtx.currentTime);
-      trebleFilter = audioCtx.createBiquadFilter();
-      trebleFilter.type = "highshelf";
-      trebleFilter.frequency.setValueAtTime(3000, audioCtx.currentTime);
-      sourceNode.connect(bassFilter);
-      bassFilter.connect(trebleFilter);
-      trebleFilter.connect(audioCtx.destination);
+    // Update volume icon
+    function updateVolumeIcon() {
+      if (audio.muted || audio.volume === 0) {
+        volumeIcon.textContent = '🔇';
+      } else if (audio.volume < 0.5) {
+        volumeIcon.textContent = '🔉';
+      } else {
+        volumeIcon.textContent = '🔊';
+      }
     }
 
-    // Update EQ filter gains from sliders
-    function updateEQ() {
-      bassFilter.gain.setValueAtTime(bassSlider.value, audioCtx.currentTime);
-      trebleFilter.gain.setValueAtTime(trebleSlider.value, audioCtx.currentTime);
+    // Toggle mute
+    function toggleMute() {
+      audio.muted = !audio.muted;
+      updateVolumeIcon();
+      if (!audio.muted) {
+        volumeSlider.value = audio.volume;
+      } else {
+        volumeSlider.value = 0;
+      }
     }
 
-    // Show/hide EQ dropdown
+    // Toggle EQ dropdown
     function toggleEQDropdown() {
       const isVisible = eqDropdown.style.display === 'block';
       eqDropdown.style.display = isVisible ? 'none' : 'block';
@@ -771,18 +906,28 @@
       }
     }
 
-    // Sort columns on header click
+    // Update EQ filter gains
+    function updateEQ() {
+      bassFilter.gain.setValueAtTime(bassSlider.value, audioCtx.currentTime);
+      trebleFilter.gain.setValueAtTime(trebleSlider.value, audioCtx.currentTime);
+    }
+
+    // Toggle theme light/dark
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+    }
+
+    // Setup column sorting
     function setupSorting() {
       document.querySelectorAll('th.sortable').forEach(th => {
         th.addEventListener('click', () => {
           const field = th.getAttribute('data-sort');
           if (sortField === field) {
-            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
           } else {
             sortField = field;
             sortDirection = 'asc';
           }
-          // Update aria-sort
           document.querySelectorAll('th.sortable').forEach(header => {
             header.setAttribute('aria-sort', 'none');
             header.classList.remove('sorted-asc', 'sorted-desc');
@@ -791,8 +936,6 @@
           th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
           renderSongList();
         });
-
-        // keyboard support
         th.addEventListener('keydown', e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -802,7 +945,7 @@
       });
     }
 
-    // Keyboard navigation in song list (arrows + enter)
+    // Setup keyboard navigation in song list and global shortcuts
     function setupKeyboardNavigation() {
       songTableBody.addEventListener('keydown', e => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -811,10 +954,7 @@
           if (!rows.length) return;
           let idx = rows.findIndex(r => r === document.activeElement);
           if (idx === -1) idx = 0;
-          else {
-            if (e.key === 'ArrowDown') idx++;
-            else idx--;
-          }
+          else idx = (e.key === 'ArrowDown') ? idx + 1 : idx - 1;
           if (idx < 0) idx = rows.length - 1;
           if (idx >= rows.length) idx = 0;
           rows[idx].focus();
@@ -825,40 +965,162 @@
           if (idx !== -1) playTrack(idx);
         }
       });
+
+      // Global shortcuts
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.isContentEditable) return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlayPause();
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          playNext();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          playPrev();
+        }
+      });
+    }
+
+    // Queue management
+    // Initialize/reset queue to filteredTracks order
+    function resetQueue() {
+      queue = filteredTracks.map((_, i) => i);
+      highlightQueueCurrent();
+    }
+
+    // Add a track to queue (if not already in)
+    function addToQueue(trackIndex) {
+      if (!queue.includes(trackIndex)) {
+        queue.push(trackIndex);
+      }
+      renderQueue();
+    }
+
+    // Render queue list
+    function renderQueue() {
+      queueList.innerHTML = '';
+      if (queue.length === 0) {
+        queueList.innerHTML = '<li>No songs in queue</li>';
+        return;
+      }
+      queue.forEach((trackIdx, i) => {
+        const li = document.createElement('li');
+        const track = filteredTracks[trackIdx];
+        li.textContent = track ? track.name : 'Unknown track';
+        li.className = (trackIdx === currentTrackIndex) ? 'active' : '';
+        li.tabIndex = 0;
+        li.setAttribute('role', 'button');
+        li.addEventListener('click', () => {
+          playTrack(trackIdx);
+        });
+        li.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            playTrack(trackIdx);
+          }
+        });
+        queueList.appendChild(li);
+      });
+    }
+
+    // Highlight currently playing in queue
+    function highlightQueueCurrent() {
+      [...queueList.children].forEach(li => li.classList.remove('active'));
+      if (currentTrackIndex === -1) return;
+      const idx = queue.findIndex(i => i === currentTrackIndex);
+      if (idx !== -1 && queueList.children[idx]) {
+        queueList.children[idx].classList.add('active');
+        queueList.children[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    // Shuffle toggle
+    function toggleShuffle() {
+      isShuffle = !isShuffle;
+      btnShuffle.style.color = isShuffle ? '#1db954' : '';
+    }
+
+    // Cycle repeat mode
+    function cycleRepeatMode() {
+      if (repeatMode === 'none') {
+        repeatMode = 'all';
+        btnRepeat.textContent = '🔁'; // Repeat all
+      } else if (repeatMode === 'all') {
+        repeatMode = 'one';
+        btnRepeat.textContent = '🔂'; // Repeat one
+      } else {
+        repeatMode = 'none';
+        btnRepeat.textContent = '🔁'; // No repeat (greyed)
+        btnRepeat.style.color = '#ccc';
+        setTimeout(() => { btnRepeat.style.color = ''; }, 200);
+      }
     }
 
     // Setup event listeners
     function setupEventListeners() {
       toggleThemeBtn.addEventListener('click', toggleTheme);
-      btnLoadSongs.addEventListener('click', () => {
-        filteredTracks = [...tracks];
-        renderSongList();
-      });
-      searchInput.addEventListener('input', filterSongs);
+
       btnPlayPause.addEventListener('click', togglePlayPause);
       btnPrev.addEventListener('click', playPrev);
       btnNext.addEventListener('click', playNext);
-      audio.addEventListener('timeupdate', updateProgress);
-      audio.addEventListener('ended', playNext);
-      progressBar.addEventListener('click', seekAudio);
-      volumeSlider.addEventListener('input', e => updateVolume(e.target.value));
+      btnShuffle.addEventListener('click', toggleShuffle);
+      btnRepeat.addEventListener('click', cycleRepeatMode);
       eqToggleBtn.addEventListener('click', toggleEQDropdown);
+
       bassSlider.addEventListener('input', updateEQ);
       trebleSlider.addEventListener('input', updateEQ);
 
-      setupSorting();
-      setupKeyboardNavigation();
+      searchInput.addEventListener('input', filterSongs);
 
-      // Hide EQ dropdown if clicking outside
-      document.addEventListener('click', e => {
+      volumeSlider.addEventListener('input', e => {
+        updateVolume(e.target.value);
+        audio.muted = false;
+      });
+
+      volumeIcon.addEventListener('click', toggleMute);
+
+      audio.addEventListener('timeupdate', updateProgress);
+      audio.addEventListener('ended', playNext);
+
+      progressBar.addEventListener('click', seekAudio);
+
+      // Close EQ dropdown on outside click
+      document.addEventListener('click', (e) => {
         if (!eqDropdown.contains(e.target) && e.target !== eqToggleBtn) {
           eqDropdown.style.display = 'none';
-          eqToggleBtn.setAttribute('aria-expanded', 'false');
+          eqToggleBtn.setAttribute('aria-expanded', false);
         }
       });
+
+      setupSorting();
+      setupKeyboardNavigation();
     }
 
-    // Initialize app
+    // Initialization function
+    async function init() {
+      setupAudioContext();
+
+      await loadSongsFromDrive();
+      filteredTracks = [...tracks];
+
+      // Preload metadata for all tracks (async but no need to await all)
+      filteredTracks.forEach(t => {
+        if (!t._metaLoaded) {
+          loadMetadata(t).then(renderSongList);
+        }
+      });
+
+      resetQueue();
+      renderSongList();
+      renderQueue();
+
+      updateVolume(volumeSlider.value);
+
+      setupEventListeners();
+    }
+
+    // Kickoff
     init();
 
   </script>
